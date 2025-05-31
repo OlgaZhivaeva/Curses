@@ -74,6 +74,7 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
 
 async def animate_spaceship(canvas, start_row, start_column, rocket_frames):
     """Display animation of a spaceship with changing the frame rate and movement control."""
+    row, column = start_row, start_column
     rows_number, columns_number = canvas.getmaxyx()
     min_tic, min_frame_rate = 1, 4
     max_tic, max_frame_rate = 2, 6
@@ -84,15 +85,15 @@ async def animate_spaceship(canvas, start_row, start_column, rocket_frames):
         rows_direction, columns_direction, _ = read_controls(canvas)
         frame_rows, frame_columns = get_frame_size(frame)
 
-        if 0 < start_row + rows_direction < rows_number - frame_rows:
-            start_row += rows_direction 
-        if 1 < start_column + columns_direction < columns_number - frame_columns - 1:
-            start_column += columns_direction    
+        if 0 < row + rows_direction < rows_number - frame_rows:
+            row += rows_direction 
+        if 1 < column + columns_direction < columns_number - frame_columns - 1:
+            column += columns_direction    
        
-        draw_frame(canvas, start_row, start_column, frame)
+        draw_frame(canvas, row, column, frame)
         await sleep(tic)
 
-        draw_frame(canvas, start_row, start_column, frame, negative=True)
+        draw_frame(canvas, row, column, frame, negative=True)
         await sleep(0)
 
         frame_rate -= 1
