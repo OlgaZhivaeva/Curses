@@ -10,6 +10,7 @@ Python 3 should already be installed.
 The Windows terminal does not support part of the console graphics. Possible solutions:
 * Use the `windows-curses` library
 * Use the bash shell of the terminal/WSL
+
 Для Windows в каталоге проекта создайте виртуальное окружение:
 ```shell
 python -m venv venv
