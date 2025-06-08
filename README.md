@@ -11,7 +11,7 @@ The Windows terminal does not support part of the console graphics. Possible sol
 * Use the `windows-curses` library
 * Use the bash shell of the terminal/WSL
 
-Для Windows в каталоге проекта создайте виртуальное окружение:
+For Windows, create a virtual environment in the project directory:
 ```shell
 python -m venv venv
 ```
