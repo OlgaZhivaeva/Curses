@@ -9,6 +9,7 @@ from curses_tools import draw_frame, read_controls, get_frame_size
 
 TIC_TIMEOUT = 0.1
 
+
 class EventLoopCommand:
     def __await__(self):
         return (yield self)
@@ -21,16 +22,14 @@ class Sleep(EventLoopCommand):
 
 async def sleep(times):
     for _ in range(times):
-        await Sleep(0.1) 
+        await Sleep(0.1)
 
 
-async def blink(canvas, row, column, symbol='*'): 
-    time_offset = random.randint(0, 20)
-
+async def blink(canvas, row, column, offset_tics, symbol='*'):
     while True:
         canvas.addstr(row, column, symbol, curses.A_DIM)
-        await sleep(time_offset)
-        time_offset = 20
+        await sleep(offset_tics)
+        offset_tics = 20
 
         canvas.addstr(row, column, symbol)
         await sleep(3)
@@ -73,48 +72,43 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
 
 
 async def animate_spaceship(canvas, start_row, start_column, rocket_frames):
-    """Display animation of a spaceship with changing the frame rate and movement control."""
+    """Display animation of a spaceship with movement control."""
     row, column = start_row, start_column
     rows_number, columns_number = canvas.getmaxyx()
-    min_tic, min_frame_rate = 1, 4
-    max_tic, max_frame_rate = 2, 6
-
-    tic, frame_rate = max_tic, max_frame_rate
 
     for frame in cycle(rocket_frames):
         rows_direction, columns_direction, _ = read_controls(canvas)
         frame_rows, frame_columns = get_frame_size(frame)
 
         if 0 < row + rows_direction < rows_number - frame_rows:
-            row += rows_direction 
+            row += rows_direction
         if 1 < column + columns_direction < columns_number - frame_columns - 1:
-            column += columns_direction    
-       
+            column += columns_direction
+
         draw_frame(canvas, row, column, frame)
-        await sleep(tic)
+        await sleep(1)
 
         draw_frame(canvas, row, column, frame, negative=True)
         await sleep(0)
 
-        frame_rate -= 1
-        if frame_rate > 0:
-            continue
-
-        if tic == max_tic:
-            tic, frame_rate = min_tic, min_frame_rate
-        else:
-            tic, frame_rate = max_tic, max_frame_rate
-    
 
 def draw(canvas):
     with open("animation_frames/rocket_frame_1.txt", "r") as rocket_1:
         rocket_frame_1 = rocket_1.read()
     with open("animation_frames/rocket_frame_2.txt", "r") as rocket_2:
         rocket_frame_2 = rocket_2.read()
-    rocket_frames = [rocket_frame_1, rocket_frame_2] 
+
+    rocket_frames = [
+        rocket_frame_1,
+        rocket_frame_1,
+        rocket_frame_2,
+        rocket_frame_2,
+        rocket_frame_1,
+        rocket_frame_2,
+    ]
 
     curses.curs_set(False)
-    canvas.nodelay(True)   
+    canvas.nodelay(True)
     canvas.border()
 
     stars_number = 100
@@ -132,8 +126,9 @@ def draw(canvas):
     for _ in range(1, stars_number):
         row = random.randint(1, rows_number - 2)
         column = random.randint(1, columns_number - 2)
-        star =  random.choice(stars)
-        coroutine = blink(canvas, row, column, star)
+        star = random.choice(stars)
+        offset_tics = random.randint(0, 20)
+        coroutine = blink(canvas, row, column, offset_tics, star)
         coroutines.append(coroutine)
 
     coroutines.append(animate_spaceship(canvas, start_row, start_column, rocket_frames))
@@ -143,7 +138,7 @@ def draw(canvas):
             try:
                 coroutine.send(None)
             except StopIteration:
-               coroutines.remove(coroutine)   
+                coroutines.remove(coroutine)
         canvas.refresh()
         time.sleep(TIC_TIMEOUT)
 
